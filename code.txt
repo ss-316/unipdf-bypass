@@ -1,0 +1,58 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/unidoc/unipdf/v3/extractor"
+	"github.com/unidoc/unipdf/v3/model"
+)
+
+func ExtractP(file *os.File) {
+	pdfReader, err := model.NewPdfReader(file)
+	if err != nil {
+		log.Fatalf("error reading file %v", err)
+	}
+
+	numOfPages, err := pdfReader.GetNumPages()
+	if err != nil {
+		log.Fatalf("error getting num of pages %v", err)
+	}
+
+	for i := 0; i < numOfPages; i++ {
+		pageNum := i + 1
+		page, err := pdfReader.GetPage(pageNum)
+		if err != nil {
+			log.Fatalf("error getting page %v", err)
+		}
+
+		textExtractor, err := extractor.New(page)
+		if err != nil {
+			log.Fatalf("error getting text extractor of the page %v", err)
+		}
+
+		text, err := textExtractor.ExtractText()
+		if err != nil {
+			log.Fatalf("error getting text %v", err)
+		}
+		fmt.Println("This is the text of the PDF page \n", text)
+	}
+	fmt.Println("completed extracting PDF \n")
+}
+
+func main() {
+	// open file
+	file1, err := os.Open("check.pdf")
+	file2, err := os.Open("checklist.pdf")
+
+	if err != nil {
+		log.Fatalf("error opening file %v", err)
+	}
+
+	files := []*os.File{file1, file2}
+
+	for _, file := range files {
+		ExtractP(file)
+	}
+}
